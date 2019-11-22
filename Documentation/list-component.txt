@@ -1,0 +1,14 @@
+LM7805
+Male header
+female header
+male header tk
+push button switch
+switch on/off small
+C104 cramic
+regulator ams1117
+dioda 1n0004/7
+led 5mm
+resistor 1kOhm
+resistor 470Ohm
+buzzer 5v
+C828
