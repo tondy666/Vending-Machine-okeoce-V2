@@ -27,10 +27,11 @@ unsigned char Button_C500(void);
 enum state {start, startdelay, c500, c1000, dropStuff, dropCoin} Condition;
 
 volatile uint32_t timeout=0;
+uint16_t nrp = 0;
 
 
 
-_Bool RunEnable =0;
+_Bool RunEnable =1;
 
 void MyTask_Init(void)
 {
@@ -73,7 +74,10 @@ void MyTask_Error_Handler(_Bool Enable, char *pData)
 }
 void MyTask_Display(_Bool Enable)
 {
-
+	if(Enable){
+		LCD_SetCursor(0, 1);
+		LCD_PrintNum(nrp);
+	}
 }
 
 /*Sensor*/
@@ -82,10 +86,16 @@ unsigned char Button_Continue(void)
 	static unsigned char bouncing=0xFF;
 	unsigned char Flagdetect=0;
 	if(Continue){
-		bouncing=(bouncing<<1);
+		if(++timeout>500000){
+			BuzzerOn;
+		}
+		else{
+			bouncing=(bouncing<<1);
+		}
 	}
 	else{
 		bouncing=(bouncing<<1)|1;
+		timeout=0;
 	}
 
 	if(bouncing==0x03){
@@ -107,6 +117,7 @@ unsigned char Button_Abort(void)
 
 	if(bouncing==0x03){
 		UART_Print("Transfer_Cancel");
+		BuzzerOff;
 		Flagdetect=1;
 	}
 	return Flagdetect;
@@ -116,10 +127,16 @@ unsigned char Button_C1000(void)
 	static unsigned char bouncing=0xFF;
 	unsigned char Flagdetect=0;
 	if(Pb1000){
-		bouncing=(bouncing<<1);
+		if(++timeout>500000){
+			BuzzerOn;
+		}
+		else{
+			bouncing=(bouncing<<1);
+		}
 	}
 	else{
 		bouncing=(bouncing<<1)|1;
+		timeout=0;
 	}
 
 	if(bouncing==0x03){
@@ -133,10 +150,16 @@ unsigned char Button_C500(void)
 	static unsigned char bouncing=0xFF;
 	unsigned char Flagdetect=0;
 	if(pb500){
-		bouncing=(bouncing<<1);
+		if(++timeout>500000){
+			BuzzerOn;
+		}
+		else{
+			bouncing=(bouncing<<1);
+		}
 	}
 	else{
 		bouncing=(bouncing<<1)|1;
+		timeout=0;
 	}
 
 	if(bouncing==0x03){

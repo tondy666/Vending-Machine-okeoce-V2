@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "MyLCD.h"
+#include "MySeOS.h"
+#include "MyTask.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -100,9 +102,11 @@ int main(void)
 	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
 	LCD_Init();
+	MyTask_Init();
+	SCH_Init();
 	HAL_GPIO_WritePin(LCD_Katoda_GPIO_Port, LCD_Katoda_Pin, GPIO_PIN_SET);
 	LCD_Clear();
-
+	TIM4->CR1 |= TIM_CR1_CEN;
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
