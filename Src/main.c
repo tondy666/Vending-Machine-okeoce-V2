@@ -33,10 +33,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define Continue HAL_GPIO_ReadPin(PbContinue_GPIO_Port, PbContinue_Pin)==GPIO_PIN_RESET
-#define Abort HAL_GPIO_ReadPin(PbAbort_GPIO_Port, PbAbort_Pin)==GPIO_PIN_RESET
-#define Pb1000  HAL_GPIO_ReadPin(PbC1000_GPIO_Port, PbC1000_Pin)==GPIO_PIN_RESET
-#define pb500 HAL_GPIO_ReadPin(PbC500_GPIO_Port, PbC500_Pin)==GPIO_PIN_RESET
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -105,6 +102,7 @@ int main(void)
 	LCD_Init();
 	HAL_GPIO_WritePin(LCD_Katoda_GPIO_Port, LCD_Katoda_Pin, GPIO_PIN_SET);
 	LCD_Clear();
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
