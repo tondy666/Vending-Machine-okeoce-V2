@@ -24,10 +24,14 @@ unsigned char Button_C500(void);
 #define BuzzerOn HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET)
 #define BuzzerOff HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET)
 
-enum state {start, startdelay, c500, c1000, dropStuff, dropCoin} Condition;
+enum state {start, startdelay, finishdelay, index_start, c500, c1000, dropStuff, dropCoin} Condition;
 
 volatile uint32_t timeout=0;
-uint16_t nrp = 0;
+unsigned int Coint_500=0;
+unsigned int Coint_1000=0;
+volatile uint64_t Jml_tunai = 0;
+volatile uint16_t Coin=0;
+char dis_coint;
 
 
 
@@ -44,18 +48,40 @@ void MyTask_Run(void)
 	switch(Condition){
 	case start:
 	{
+		LCD_SetCursor(0, 0);LCD_Print("**Vending Mechine**");
+		Condition=startdelay;
 		break;
 	}
 	case startdelay:
 	{
+		BuzzerOn;
+		if(++timeout>250000){
+			LCD_SetCursor(0, 1);LCD_Print("Masukkan Coin:");
+			timeout=0;
+			BuzzerOff;
+			MyTask_Display(RunEnable);
+			Condition=index_start;
+		}
 		break;
 	}
 	case c500:
 	{
+		if(Button_C500()){
+			Coin=5;
+			Jml_tunai+=5;
+			MyTask_Display(RunEnable);
+			Condition=c1000;
+		}
 		break;
 	}
 	case c1000:
 	{
+		if(Button_C500()){
+			Coin=5;
+			Jml_tunai+=5;
+			MyTask_Display(RunEnable);
+			Condition=dropStuff;
+		}
 		break;
 	}
 	case dropCoin:
@@ -64,6 +90,37 @@ void MyTask_Run(void)
 	}
 	case dropStuff:
 	{
+		if(Button_Continue()){
+			LCD_SetCursor(0, 3);LCD_Print("Permen Keluar");
+			Condition=finishdelay;
+		}
+		break;
+	}
+	case index_start:
+	{
+		if(Button_C500()){
+			Coin=5;
+			Jml_tunai+=5;
+			MyTask_Display(RunEnable);
+			Condition=c500;
+		}
+		if(Button_C1000()){
+			Coin=10;
+			Jml_tunai+=10;
+			MyTask_Display(RunEnable);
+			Condition=c1000;
+		}
+		break;
+	}
+	case finishdelay:
+	{
+		if(++timeout>1000000){
+			timeout=0;
+			Coin=0;
+			Jml_tunai=0;
+			LCD_Clear();
+			Condition=start;
+		}
 		break;
 	}
 	}
@@ -75,8 +132,8 @@ void MyTask_Error_Handler(_Bool Enable, char *pData)
 void MyTask_Display(_Bool Enable)
 {
 	if(Enable){
-		LCD_SetCursor(0, 1);
-		LCD_PrintNum(nrp);
+		LCD_SetCursor(15, 1);LCD_PrintNum(Coin);LCD_Print("00 ");
+		LCD_SetCursor(0, 2);LCD_Print("Total: ");LCD_PrintNum(Jml_tunai);LCD_Print("00 ");
 	}
 }
 
