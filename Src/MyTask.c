@@ -24,7 +24,7 @@ unsigned char Button_C500(void);
 #define BuzzerOn HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET)
 #define BuzzerOff HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET)
 
-enum state {start, startdelay, finishdelay, index_start, c500, c1000, dropStuff, dropCoin} Condition;
+enum state {start, startdelay, finishdelay, buffer, index_start, c500, c1000, dropStuff, dropCoin} Condition;
 
 volatile uint32_t timeout=0;
 unsigned int Coint_500=0;
@@ -121,6 +121,12 @@ void MyTask_Run(void)
 			LCD_Clear();
 			Condition=start;
 		}
+		break;
+	}
+
+	case buffer:
+	{
+
 		break;
 	}
 	}
