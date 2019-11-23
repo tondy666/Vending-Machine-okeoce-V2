@@ -24,21 +24,24 @@ unsigned char Button_C500(void);
 #define BuzzerOn HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET)
 #define BuzzerOff HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET)
 
-
-enum state {start, startdelay, finishdelay, kembali, buffer, index_start, c500, dropStuff, dropCoin} Condition;
+enum state {start, startdelay, finishdelay, kembali, buffer, index_start, c500, dropStuff, dropCoin, batal} Condition;
 
 volatile uint32_t timeout=0;
+volatile uint32_t i=0;
 volatile uint8_t state_kembali=0;
 unsigned int Coint_500=0;
 unsigned int Coint_1000=0;
 volatile uint64_t Jml_tunai = 0;
 volatile uint16_t Coin=0;
+volatile uint16_t Coin_temp=0;
 volatile uint64_t Jml_kembali=0;
 char dis_coint;
 
-
 _Bool Kembali500 =0;
 _Bool Kembali1000 =0;
+_Bool Abort500=0;
+_Bool Abort1000=0;
+_Bool AbortTotal=0;
 _Bool RunEnable =1;
 
 void MyTask_Init(void)
@@ -72,24 +75,45 @@ void MyTask_Run(void)
 	{
 		if(Button_C500()){
 			Coin=5;
+			Coin_temp+=5;
 			Jml_tunai+=5;
 			MyTask_Display(RunEnable);
 			Condition=buffer;
+		}
+		if(Button_C1000()){
+			Coin=10;
+			Coin_temp+=10;
+			Kembali500=!(Kembali500);
+			Condition=kembali;
+		}
+		if(Button_Abort()){
+			LCD_Clear();
+			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
+			Condition=batal;
 		}
 		break;
 	}
 	case buffer:
 	{
 		if(Button_C500()){
+			Coin=5;
+			Coin_temp+=5;
 			Kembali500=!(Kembali500);
 			Condition=kembali;
 		}
 		if(Button_C1000()){
+			Coin=10;
+			Coin_temp+=10;
 			Kembali1000=!(Kembali1000);
 			Condition=kembali;
 		}
 		if(Button_Continue()){
 			Condition=dropStuff;
+		}
+		if(Button_Abort()){
+			LCD_Clear();
+			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
+			Condition=batal;
 		}
 		break;
 	}
@@ -107,12 +131,14 @@ void MyTask_Run(void)
 	{
 		if(Button_C500()){
 			Coin=5;
+			Coin_temp+=5;
 			Jml_tunai+=5;
 			MyTask_Display(RunEnable);
 			Condition=c500;
 		}
 		if(Button_C1000()){
 			Coin=10;
+			Coin_temp+=10;
 			Jml_tunai+=10;
 			MyTask_Display(RunEnable);
 			Condition=buffer;
@@ -124,6 +150,7 @@ void MyTask_Run(void)
 		if(++timeout>1000000){
 			timeout=0;
 			Coin=0;
+			Coin_temp=0;
 			Jml_tunai=0;
 			Jml_kembali=0;
 			LCD_Clear();
@@ -134,12 +161,28 @@ void MyTask_Run(void)
 	case kembali:
 	{
 		if(Kembali500){
-			Coin=5;
 			Jml_tunai=10;
 			Jml_kembali+=5;
 			Kembali500=!(Kembali500);
 			MyTask_Display(RunEnable);
 			Condition=buffer;
+		}
+		if(Kembali1000){
+			Jml_tunai=10;
+			Jml_kembali+=10;
+			Kembali1000=!(Kembali1000);
+			MyTask_Display(RunEnable);
+			Condition=buffer;
+		}
+		break;
+	}
+	case batal:
+	{
+		LCD_SetCursor(0, 1);
+		LCD_Print("Uang Kembali");LCD_SetCursor(13, 1);LCD_PrintNum(Coin_temp);LCD_Print("00");
+		if(++i>150){
+			i=0;
+			Condition=finishdelay;
 		}
 		break;
 	}
