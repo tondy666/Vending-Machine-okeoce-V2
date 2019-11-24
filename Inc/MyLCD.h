@@ -2,7 +2,7 @@
  * MyLCD.h
  *
  *  Created on: Nov 21, 2019
- *      Author: izzat
+ *      Author:
  */
 
 #ifndef INC_MYLCD_H_

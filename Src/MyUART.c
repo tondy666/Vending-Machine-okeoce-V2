@@ -2,7 +2,7 @@
  * MyUART.c
  *
  *  Created on: Nov 22, 2019
- *      Author: izzat
+ *      Author:
  */
 
 #include "main.h"

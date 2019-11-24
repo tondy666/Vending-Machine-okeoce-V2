@@ -2,7 +2,7 @@
  * MyLCD.c
  *
  *  Created on: Nov 21, 2019
- *      Author: izzat
+ *      Author:
  */
 
 #include "main.h"

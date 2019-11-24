@@ -2,7 +2,7 @@
  * MyTask.c
  *
  *  Created on: Nov 22, 2019
- *      Author: izzat
+ *      Author:
  */
 
 #include "main.h"
@@ -15,6 +15,11 @@ unsigned char Button_Continue(void);
 unsigned char Button_Abort(void);
 unsigned char Button_C1000(void);
 unsigned char Button_C500(void);
+
+
+
+
+
 
 #define Continue HAL_GPIO_ReadPin(PbContinue_GPIO_Port, PbContinue_Pin)==GPIO_PIN_RESET
 #define Abort HAL_GPIO_ReadPin(PbAbort_GPIO_Port, PbAbort_Pin)==GPIO_PIN_RESET
@@ -55,7 +60,7 @@ void MyTask_Run(void)
 	switch(Condition){
 	case start:
 	{
-		LCD_SetCursor(0, 0);LCD_Print("**Vending Mechine**");
+		LCD_SetCursor(0, 0);LCD_Print("Vending Machine OkeOce");
 		Condition=startdelay;
 		break;
 	}
@@ -63,7 +68,7 @@ void MyTask_Run(void)
 	{
 		BuzzerOn;
 		if(++timeout>250000){
-			LCD_SetCursor(0, 1);LCD_Print("Masukkan Coin:");
+			LCD_SetCursor(0, 1);LCD_Print("Masukkan Coin nya:");
 			timeout=0;
 			BuzzerOff;
 			MyTask_Display(RunEnable);
@@ -95,7 +100,7 @@ void MyTask_Run(void)
 	}
 	case buffer:
 	{
-		if(Button_C500()){
+ 		if(Button_C500()){
 			Coin=5;
 			Coin_temp+=5;
 			Kembali500=!(Kembali500);
