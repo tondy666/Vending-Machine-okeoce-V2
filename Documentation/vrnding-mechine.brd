@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="9.2.2">
+<eagle version="9.5.1">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
@@ -77,8 +77,8 @@
 <plain>
 <wire x1="0" y1="0" x2="160" y2="0" width="0" layer="20"/>
 <wire x1="160" y1="0" x2="160" y2="100" width="0" layer="20"/>
-<wire x1="160" y1="100" x2="0" y2="100" width="0" layer="20"/>
 <wire x1="0" y1="100" x2="0" y2="0" width="0" layer="20"/>
+<text x="127" y="92.71" size="1.778" layer="16" rot="MR0">Tonday.INC</text>
 </plain>
 <libraries>
 <library name="display-lcd" urn="urn:adsk.eagle:library:214">
@@ -2782,6 +2782,9 @@ design rules under a new name.</description>
 <vertex x="82.55" y="10.16"/>
 <vertex x="20.32" y="10.16"/>
 </polygon>
+</signal>
+<signal name="N$16">
+<wire x1="160" y1="100" x2="0" y2="100" width="0" layer="1"/>
 </signal>
 </signals>
 <mfgpreviewcolors>

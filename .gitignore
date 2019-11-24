@@ -1,3 +1,5 @@
 Debug/
 .settings/
 *.ioc
+*.b#1
+*.s#1
