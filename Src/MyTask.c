@@ -30,7 +30,7 @@ void Led_Continue(void);
 #define BuzzerOn HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET)
 #define BuzzerOff HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET)
 
-enum state {start, startdelay, finishdelay, kembali, buffer, index_start, c500, dropStuff, dropCoin, batal} Condition;
+enum state {start, startdelay, finishdelay, koinkurang, kembali, buffer, index_start, c500, dropStuff, dropCoin, batal} Condition;
 
 volatile uint32_t timeout=0;
 volatile uint32_t i=0;
@@ -63,7 +63,7 @@ void MyTask_Run(void)
 	case start:
 	{
 		Led_Init();
-		LCD_SetCursor(0, 0);LCD_Print("**Vending Mechine**");
+		LCD_SetCursor(0, 0);LCD_Print("**Vending  Mechine**");
 		Condition=startdelay;
 		break;
 	}
@@ -100,6 +100,26 @@ void MyTask_Run(void)
 			LCD_Clear();
 			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
 			Condition=batal;
+		}
+		if(Button_Continue()){
+			BuzzerOn;
+			LCD_Clear();
+			LCD_SetCursor(0, 1);LCD_Print("**Can not Process**");
+			LCD_SetCursor(0, 2);LCD_Print("** Koin Kurang!! **");
+			Condition=koinkurang;
+		}
+		break;
+	}
+	case koinkurang:
+	{
+		if(++timeout>1000000){
+			timeout=0;
+			LCD_Clear();
+			LCD_SetCursor(0, 0);LCD_Print("**Vending  Mechine**");
+			LCD_SetCursor(0, 1);LCD_Print("Masukkan Coin:");
+			MyTask_Display(RunEnable);
+			BuzzerOff;
+			Condition=c500;
 		}
 		break;
 	}
