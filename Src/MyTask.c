@@ -16,6 +16,7 @@ unsigned char Button_Abort(void);
 unsigned char Button_C1000(void);
 unsigned char Button_C500(void);
 void Led_Init(void);
+
 void Led_IndexStart(void);
 void Led_c500(void);
 void Led_Buffer(void);
@@ -35,7 +36,7 @@ void Led_Continue(void);
 #define BuzzerOn HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_SET)
 #define BuzzerOff HAL_GPIO_WritePin(Buzzer_GPIO_Port, Buzzer_Pin, GPIO_PIN_RESET)
 
-enum state {start, startdelay, finishdelay, kembali, buffer, index_start, c500, dropStuff, dropCoin, batal} Condition;
+enum state {start, startdelay, finishdelay, koinkurang, kembali, buffer, index_start, c500, dropStuff, dropCoin, batal} Condition;
 
 volatile uint32_t timeout=0;
 volatile uint32_t i=0;
@@ -67,7 +68,8 @@ void MyTask_Run(void)
 	switch(Condition){
 	case start:
 	{
-		LCD_SetCursor(0, 0);LCD_Print("Vending Machine OkeOce");
+		LCD_SetCursor(0, 0);LCD_Print("Vending Machine");
+		LCD_SetCursor(0, 1);LCD_Print("OKE OCE 2019");
 		Led_Init();
 		Condition=startdelay;
 		break;
@@ -76,7 +78,7 @@ void MyTask_Run(void)
 	{
 		BuzzerOn;
 		if(++timeout>250000){
-			LCD_SetCursor(0, 1);LCD_Print("Masukkan Coin nya:");
+			LCD_SetCursor(0, 2);LCD_Print("Masukkan Coin :");
 			timeout=0;
 			BuzzerOff;
 			MyTask_Display(RunEnable);
@@ -105,6 +107,27 @@ void MyTask_Run(void)
 			LCD_Clear();
 			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
 			Condition=batal;
+		}
+		if(Button_Continue()){
+			BuzzerOn;
+			LCD_Clear();
+			LCD_SetCursor(0, 1);LCD_Print("Transaksi Gagal");
+			LCD_SetCursor(0, 2);LCD_Print("MAAF COIN KURANG");
+			Condition=koinkurang;
+		}
+		break;
+	}
+	case koinkurang:
+	{
+		if(++timeout>1000000){
+			timeout=0;
+			LCD_Clear();
+			LCD_SetCursor(0, 0);LCD_Print("Vending Machine");
+			LCD_SetCursor(0, 1);LCD_Print("OKE OCE 2019");
+			LCD_SetCursor(0, 2);LCD_Print("Masukkan Coin:");
+			MyTask_Display(RunEnable);
+			BuzzerOff;
+			Condition=c500;
 		}
 		break;
 	}
@@ -141,7 +164,11 @@ void MyTask_Run(void)
 	case dropStuff:
 	{
 		Led_Continue();
-		LCD_SetCursor(0, 3);LCD_Print("Minuman Keluar");
+		LCD_Clear();
+		LCD_SetCursor(0, 1);LCD_Print("Minuman Keluar");
+		LCD_SetCursor(0, 2);
+		LCD_Print("Uang Kembali");LCD_SetCursor(13, 2);LCD_PrintNum(Jml_kembali);LCD_Print("00");
+		UART_Print("Tranfer_OK\n\r");
 		Condition=finishdelay;
 		break;
 	}
@@ -197,8 +224,8 @@ void MyTask_Run(void)
 	}
 	case batal:
 	{
-		LCD_SetCursor(0, 1);
-		LCD_Print("Uang Kembali");LCD_SetCursor(13, 1);LCD_PrintNum(Coin_temp);LCD_Print("00");
+		LCD_SetCursor(0, 2);
+		LCD_Print("Uang Kembali");LCD_SetCursor(13, 2);LCD_PrintNum(Coin_temp);LCD_Print("00");
 		if(++i>30){
 			i=0;
 			Condition=finishdelay;
@@ -214,8 +241,8 @@ void MyTask_Error_Handler(_Bool Enable, char *pData)
 void MyTask_Display(_Bool Enable)
 {
 	if(Enable){
-		LCD_SetCursor(15, 1);LCD_PrintNum(Coin);LCD_Print("00 ");
-		LCD_SetCursor(0, 2);LCD_Print("Total: ");LCD_PrintNum(Jml_tunai);LCD_Print("00 ");LCD_SetCursor(12, 2);LCD_PrintNum(Jml_kembali);LCD_Print("00 ");
+		LCD_SetCursor(15, 2);LCD_PrintNum(Coin);LCD_Print("00 ");
+		LCD_SetCursor(0, 3);LCD_Print("Total: ");LCD_PrintNum(Jml_tunai);LCD_Print("00 ");LCD_SetCursor(15, 3);LCD_PrintNum(Jml_kembali);LCD_Print("00 ");
 	}
 }
 
@@ -238,7 +265,7 @@ unsigned char Button_Continue(void)
 	}
 
 	if(bouncing==0x03){
-		UART_Print("Tranfer_OK");
+
 		Flagdetect=1;
 	}
 	return Flagdetect;
@@ -255,7 +282,7 @@ unsigned char Button_Abort(void)
 	}
 
 	if(bouncing==0x03){
-		UART_Print("Transfer_Cancel");
+		UART_Print("Transfer_Cancel\n\r");
 		BuzzerOff;
 		Flagdetect=1;
 	}
@@ -279,7 +306,7 @@ unsigned char Button_C1000(void)
 	}
 
 	if(bouncing==0x03){
-		UART_Print("1000");
+		UART_Print("1000\n\r");
 		Flagdetect=1;
 	}
 	return Flagdetect;
@@ -302,7 +329,7 @@ unsigned char Button_C500(void)
 	}
 
 	if(bouncing==0x03){
-		UART_Print("500");
+		UART_Print("500\n\r");
 		Flagdetect=1;
 	}
 	return Flagdetect;
