@@ -20,7 +20,8 @@ void Led_Init(void);
 void Led_IndexStart(void);
 void Led_c500(void);
 void Led_Buffer(void);
-void Led_Abort(void);
+void Led_Abort500(void);
+void Led_Abort1000(void);
 void Led_Continue(void);
 
 
@@ -97,13 +98,14 @@ void MyTask_Run(void)
 			Condition=buffer;
 		}
 		if(Button_C1000()){
+			Led_Abort500();
 			Coin=10;
 			Coin_temp+=10;
 			Kembali500=!(Kembali500);
 			Condition=kembali;
 		}
 		if(Button_Abort()){
-			Led_Abort();
+			Led_Abort500();
 			LCD_Clear();
 			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
 			Condition=batal;
@@ -138,19 +140,21 @@ void MyTask_Run(void)
 			Coin=5;
 			Coin_temp+=5;
 			Kembali500=!(Kembali500);
+			Led_Abort500();
 			Condition=kembali;
 		}
 		if(Button_C1000()){
 			Coin=10;
 			Coin_temp+=10;
 			Kembali1000=!(Kembali1000);
+			Led_Abort1000();
 			Condition=kembali;
 		}
 		if(Button_Continue()){
 			Condition=dropStuff;
 		}
 		if(Button_Abort()){
-			Led_Abort();
+			Led_Abort1000();
 			LCD_Clear();
 			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
 			Condition=batal;
@@ -364,12 +368,19 @@ void Led_Buffer(void)
 	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
 }
-void Led_Abort(void)
+void Led_Abort500(void)
 {
 	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_RESET);
+}
+void Led_Abort1000(void)
+{
+	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
 }
 void Led_Continue(void)
 {
