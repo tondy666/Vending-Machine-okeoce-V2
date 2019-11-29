@@ -16,12 +16,12 @@ unsigned char Button_Abort(void);
 unsigned char Button_C1000(void);
 unsigned char Button_C500(void);
 void Led_Init(void);
-void Led_IndexStart(void);
-void Led_c500(void);
-void Led_Buffer(void);
-void Led_Abort500(void);
-void Led_Abort1000(void);
-void Led_Continue(void);
+void Led_Process(void);
+void Led_Cancel(void);
+void Led_kembali500(void);
+void Led_Kembali1000(void);
+void Led_Kembali(void);
+void Led_500(void);
 
 #define Continue HAL_GPIO_ReadPin(PbContinue_GPIO_Port, PbContinue_Pin)==GPIO_PIN_RESET
 #define Abort HAL_GPIO_ReadPin(PbAbort_GPIO_Port, PbAbort_Pin)==GPIO_PIN_RESET
@@ -82,7 +82,6 @@ void MyTask_Run(void)
 	}
 	case c500:
 	{
-		Led_c500();
 		if(Button_C500()){
 			Coin=5;
 			Coin_temp+=5;
@@ -91,16 +90,16 @@ void MyTask_Run(void)
 			Condition=buffer;
 		}
 		if(Button_C1000()){
-			Led_Abort500();
 			Coin=10;
 			Coin_temp+=10;
 			Kembali500=!(Kembali500);
+			Led_kembali500();
 			Condition=kembali;
 		}
 		if(Button_Abort()){
-			Led_Abort500();
 			LCD_Clear();
 			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
+			Led_kembali500();
 			Condition=batal;
 		}
 		if(Button_Continue()){
@@ -127,28 +126,33 @@ void MyTask_Run(void)
 	}
 	case buffer:
 	{
-		Led_Buffer();
+		Led_Init();
 		if(Button_C500()){
 			Coin=5;
 			Coin_temp+=5;
 			Kembali500=!(Kembali500);
-			Led_Abort500();
+			Led_500();
 			Condition=kembali;
 		}
 		if(Button_C1000()){
 			Coin=10;
 			Coin_temp+=10;
 			Kembali1000=!(Kembali1000);
-			Led_Abort1000();
+			Led_Kembali1000();
 			Condition=kembali;
 		}
 		if(Button_Continue()){
 			Condition=dropStuff;
 		}
 		if(Button_Abort()){
-			Led_Abort1000();
 			LCD_Clear();
 			LCD_SetCursor(0, 0);LCD_Print("Transaksi gagal");
+			if(Coin_temp>12)
+			{
+				Led_Cancel();
+			}else{
+				Led_Kembali();
+			}
 			Condition=batal;
 		}
 		break;
@@ -159,14 +163,13 @@ void MyTask_Run(void)
 	}
 	case dropStuff:
 	{
-		Led_Continue();
+		Led_Process();
 		LCD_SetCursor(0, 3);LCD_Print("Minuman Keluar");
 		Condition=finishdelay;
 		break;
 	}
 	case index_start:
 	{
-		Led_IndexStart();
 		if(Button_C500()){
 			Coin=5;
 			Coin_temp+=5;
@@ -199,18 +202,24 @@ void MyTask_Run(void)
 	case kembali:
 	{
 		if(Kembali500){
-			Jml_tunai=10;
-			Jml_kembali+=5;
-			Kembali500=!(Kembali500);
-			MyTask_Display(RunEnable);
-			Condition=buffer;
+			if(++timeout>500000){
+				Jml_tunai=10;
+				Jml_kembali+=5;
+				Kembali500=!(Kembali500);
+				MyTask_Display(RunEnable);
+				timeout=0;
+				Condition=buffer;
+			}
 		}
 		if(Kembali1000){
-			Jml_tunai=10;
-			Jml_kembali+=10;
-			Kembali1000=!(Kembali1000);
-			MyTask_Display(RunEnable);
-			Condition=buffer;
+			if(++timeout>500000){
+				Jml_tunai=10;
+				Jml_kembali+=10;
+				Kembali1000=!(Kembali1000);
+				MyTask_Display(RunEnable);
+				timeout=0;
+				Condition=buffer;
+			}
 		}
 		break;
 	}
@@ -234,7 +243,7 @@ void MyTask_Display(_Bool Enable)
 {
 	if(Enable){
 		LCD_SetCursor(15, 1);LCD_PrintNum(Coin);LCD_Print("00 ");
-		LCD_SetCursor(0, 2);LCD_Print("Total: ");LCD_PrintNum(Jml_tunai);LCD_Print("00 ");LCD_SetCursor(12, 2);LCD_PrintNum(Jml_kembali);LCD_Print("00 ");
+		LCD_SetCursor(0, 2);LCD_Print("Total: ");LCD_PrintNum(Jml_tunai);LCD_Print("00 ");
 	}
 }
 
@@ -335,46 +344,46 @@ void Led_Init(void)
 	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
 }
-void Led_IndexStart(void)
-{
-	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
-}
-void Led_c500(void)
-{
-	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
-}
-void Led_Buffer(void)
-{
-	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
-}
-void Led_Abort500(void)
+void Led_Process(void)
 {
 	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_RESET);
 }
-void Led_Abort1000(void)
+void Led_Cancel(void)
 {
-	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
 }
-void Led_Continue(void)
+void Led_kembali500(void)
 {
 	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
+}
+void Led_Kembali1000(void)
+{
+	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
+}
+void Led_Kembali(void)
+{
+	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
+}
+void Led_500(void)
+{
+	HAL_GPIO_WritePin(Led_0_GPIO_Port, Led_0_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Led_1_GPIO_Port, Led_1_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(Led_2_GPIO_Port, Led_2_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(Led_3_GPIO_Port, Led_3_Pin, GPIO_PIN_SET);
 }
 
